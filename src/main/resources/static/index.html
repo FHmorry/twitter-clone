@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Twitter Clone</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Twitter Clone</h1>
+    </header>
+    <section id="login-container">
+        <form action="/api/users/login" method="post">
+            <input type="text" name="username" placeholder="ユーザー名" required>
+            <input type="password" name="password" placeholder="パスワード" required>
+            <button type="submit">ログイン</button>
+        </form>
+    </section>
+    <section id="tweet-container">
+        <!-- ツイートの表示部分はサーバーから動的に生成される -->
+    </section>
+    <footer>
+        <p>Twitter Clone by Your Name</p>
+    </footer>
+</body>
+</html>
