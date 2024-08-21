@@ -21,7 +21,6 @@ public class SecurityConfig {
     @Autowired 
     private UserRepository userRepository;
 
-    // SecurityFilterChainのBeanを定義する
     @Bean 
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // CORSを有効にする
@@ -30,8 +29,8 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable()) 
             // 認証の設定
             .authorizeHttpRequests(auth -> auth
-                // /loginと/logoutは認証不要
-                .requestMatchers("/login", "/logout").permitAll() 
+                // /login、/logout、/registerは認証不要
+                .requestMatchers("/login", "/logout", "/register").permitAll() 
                 // その他のリクエストは認証が必要
                 .anyRequest().authenticated() 
             )
