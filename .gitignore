@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# scriptディレクトリを明示的に追跡
+!script/
