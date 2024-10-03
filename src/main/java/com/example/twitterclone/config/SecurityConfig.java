@@ -1,65 +1,43 @@
 package com.example.twitterclone.config;
 
-import com.example.twitterclone.repository.UserRepository;
-import com.example.twitterclone.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.SecurityFilterChain;
-import jakarta.servlet.http.HttpServletResponse;
 
-import java.util.ArrayList;
-
+/**
+ * Spring Securityの設定を行うクラス
+ * アプリケーションのセキュリティ設定を定義し、認証・認可の動作を制御する
+ */
 @Configuration 
 @EnableWebSecurity 
 public class SecurityConfig {
 
-    @Autowired 
-    private UserRepository userRepository;
+    @Autowired
+    private DaoAuthenticationProvider authenticationProvider;
 
+    /**
+     * セキュリティフィルターチェーンを構成するメソッド
+     * HTTPリクエストに対するセキュリティ設定を行い、認証・認可のルールを定義する
+     * @param http HttpSecurityオブジェクト
+     * @return 構成されたSecurityFilterChain
+     * @throws Exception セキュリティ設定中に例外が発生した場合
+     */
     @Bean 
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // CORSを有効にする
-        http.cors(cors -> cors.and())  
-            // CSRFを無効にする
-            .csrf(csrf -> csrf.disable()) 
-            // 認証の設定
+        http
+            .cors(cors -> cors.configure(http)) // CORSの設定を有効化
+            .csrf(csrf -> csrf.disable()) // CSRF保護を無効化（RESTful APIの場合は一般的）
             .authorizeHttpRequests(auth -> auth
-                // /login、/logout、/registerは認証不要
-                .requestMatchers("/login", "/logout", "/register").permitAll() 
-                // その他のリクエストは認証が必要
-                .anyRequest().authenticated() 
+                .requestMatchers("/login", "/logout", "/register").permitAll() // これらのパスは認証不要
+                .anyRequest().authenticated() // その他のリクエストは認証が必要
             )
-            // ログアウトの設定
-            .logout(logout -> logout
-                // ログアウトURLを設定
-                .logoutUrl("/logout") 
-                // ログアウト成功時のステータスを設定
-                .logoutSuccessHandler((request, response, authentication) -> {
-                    response.setStatus(HttpServletResponse.SC_OK); 
-                })
-            );
-        // SecurityFilterChainを構築して返す
-        return http.build(); 
-    }
-
-    // UserDetailsServiceのBeanを定義する
-    @Bean 
-    public UserDetailsService userDetailsService() {
-        return username -> {
-            // ユーザー名でユーザーを検索
-            User user = userRepository.findByUsername(username); 
-            if (user != null) {
-                // ユーザーが見つかった場合、UserDetailsを返す
-                return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), new ArrayList<>()); 
-            } else {
-                // ユーザーが見つからない場合、例外をスローする
-                throw new UsernameNotFoundException("User not found"); 
-            }
-        };
+            .formLogin(form -> form.disable()) // ログイン処理を無効化
+            .logout(logout -> logout.disable()) // ログアウト処理を無効化
+            .authenticationProvider(authenticationProvider);
+        return http.build();
     }
 }

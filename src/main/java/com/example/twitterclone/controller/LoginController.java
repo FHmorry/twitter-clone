@@ -1,42 +1,62 @@
 package com.example.twitterclone.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.twitterclone.model.User;
-import com.example.twitterclone.repository.UserRepository;
-import java.util.Collections; // Added this import
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * ログイン処理を担当するコントローラークラス
+ * このクラスはユーザーの認証とログイン処理を行います
+ */
 @RestController
 public class LoginController {
 
+  /**
+   * Spring Securityの認証マネージャー
+   * ユーザーの認証処理に使用されます
+   */
   @Autowired
-  private UserRepository userRepository;
+  private AuthenticationManager authenticationManager;
 
+  /**
+   * ログイン処理を行うメソッド
+   * @param user ログイン情報を含むユーザーオブジェクト
+   * @param request HTTPリクエスト
+   * @return ログイン結果を含むResponseEntity
+   */
   @CrossOrigin(origins = "http://localhost:3000")
   @PostMapping("/login")
   public ResponseEntity<Map<String, String>> login(@RequestBody User user, HttpServletRequest request) {
-    return userRepository.findByUsernameAndPassword(user.getUsername(), user.getPassword())
-        .map(foundUser -> {
-            // ログイン成功時にセッションを再作成して再利用を防止
-            HttpSession session = request.getSession(true);
-            
-            // レスポンスボディにユーザー名を含める
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Login successful");
-            response.put("username", foundUser.getUsername());
-            return ResponseEntity.ok().body(response);
-        })
-        .orElseGet(() -> {
-            // 修正: Collectionsを使用するためにインポートを追加
-            return ResponseEntity.status(401).body(Collections.singletonMap("message", "User not found"));
-        });
+    try {
+      // ユーザー名とパスワードを使用して認証を試みる
+      Authentication authentication = authenticationManager.authenticate(
+          new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
+      );
+      // 認証成功時、SecurityContextに認証情報を設定
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+
+      // 認証成功時のレスポンスを作成
+      Map<String, String> response = new HashMap<>();
+      response.put("message", "ログイン成功");
+      response.put("username", user.getUsername());
+      return ResponseEntity.ok().body(response);
+    } catch (AuthenticationException e) {
+      // 認証失敗時のエラーレスポンスを作成
+      Map<String, String> response = new HashMap<>();
+      response.put("message", "ログイン失敗: " + e.getMessage());
+      return ResponseEntity.status(401).body(response);
+    }
   }
 }
