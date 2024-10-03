@@ -1,4 +1,4 @@
-""package com.example.twitterclone.config;
+package com.example.twitterclone.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
