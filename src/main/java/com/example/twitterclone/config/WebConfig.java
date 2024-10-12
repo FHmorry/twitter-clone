@@ -3,13 +3,14 @@ package com.example.twitterclone.config;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.lang.NonNull;
 
 @Configuration
 // WebMvcConfigurerを実装するクラス
 public class WebConfig implements WebMvcConfigurer {
     @Override
     // CORSの設定を追加するメソッド
-    public void addCorsMappings(CorsRegistry registry) {
+    public void addCorsMappings(@NonNull CorsRegistry registry) {
         // 全てのパスに対してCORSを許可
         registry.addMapping("/**")
                 // 許可するオリジンを設定

@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.twitterclone.model.User;
-import com.example.twitterclone.repository.UserRepository;
 import com.example.twitterclone.service.UserService;
 import org.springframework.dao.DataIntegrityViolationException;
 
@@ -17,9 +16,6 @@ import org.springframework.dao.DataIntegrityViolationException;
  */
 @RestController
 public class RegisterController {
-
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
     private UserService userService;
