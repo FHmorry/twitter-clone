@@ -1,0 +1,111 @@
+# Spring Boot、Java、Spring Security、JPA、RESTful APIのベストプラクティス
+
+## アーキテクチャ
+- レイヤードアーキテクチャを採用（Controller、Service、Repository層）
+- 各層の責務を明確に分離
+- 依存性注入を積極的に活用
+- Spring Bootの自動設定を活用し、設定を簡素化
+
+## セキュリティ
+- Spring Securityを使用し、適切な認証・認可を実装
+- JWTを使用したトークンベースの認証を実装
+- CSRFプロテクションを有効化（必要に応じて）
+- センシティブな情報は暗号化して保存
+- HTTPSを強制的に使用する設定
+- パスワードハッシュ化: BCryptを使用
+- JWTトークン有効期限: アクセストークン15分、リフレッシュトークン7日
+- CORS設定: フロントエンドのオリジンのみ許可
+- レートリミット: IPアドレスごとに1分間で100リクエストまで
+
+## データアクセス
+- JPAとSpring Data JPAを使用
+- パラメータ化されたクエリメソッドを使用（SQLインジェクション防止）
+- @Transactionalアノテーションでトランザクション管理
+- エンティティのライフサイクルイベント（@PrePersist, @PreUpdate）を活用
+
+## RESTful API設計
+- RESTful原則に従ったAPI設計
+- 適切なHTTPメソッドの使用（GET, POST, PUT, DELETE等）
+- @ControllerAdviceを使用したエラーハンドリング
+- APIのバージョニングを考慮
+- ベースURL: /api/v1
+- リソース命名: 複数形、ケバブケース（例：/api/v1/blog-posts）
+- CRUD操作:
+  - 作成: POST /resource
+  - 読取: GET /resource/:id
+  - 更新: PUT /resource/:id
+  - 削除: DELETE /resource/:id
+- 一覧取得: GET /resource?page=0&size=20
+
+## コーディングスタイル
+- クラス名：PascalCase
+- メソッド名・フィールド名：camelCase
+- 定数：SNAKE_CASE（大文字）
+- Lombokを使用（@Getter, @Setter, @Builder等）
+- コードの可読性を高めるために適切なコメントを追加
+
+## 設定管理
+- application.ymlを使用
+- プロファイルで環境ごとの設定を管理
+- センシティブな設定は環境変数や外部設定サーバーを使用
+- Spring Cloud Configを使用して設定を集中管理
+
+## パフォーマンス最適化
+- 適切なキャッシュ戦略（@Cacheable等）
+- ページネーションの実装（大量データ処理時）
+- N+1問題回避のための適切なフェッチ戦略
+- データベース接続プールを使用してパフォーマンスを向上
+- データベースインデックス: 頻繁に検索されるカラムにインデックスを作成
+- N+1問題: Eager FetchingとJPQLのJOIN FETCHを適切に使用
+- キャッシュ戦略: 頻繁に参照される静的データにはRedisキャッシュを使用
+
+## テスト
+- 単体テスト：JUnitとMockito
+- 統合テスト：Spring Boot Test
+- テストカバレッジ80%以上を維持
+- テスト用のプロファイルを使用して環境を分離
+- 単体テスト: 全てのサービスクラスとユーティリティクラスをカバー
+- 統合テスト: 全てのコントローラーエンドポイントをカバー
+- E2Eテスト: 主要なユーザーフローをカバー
+- テストデータ: テストごとにデータベースをクリーンアップ
+
+## ロギング
+- SLF4JとLogbackを使用
+- 適切なログレベルの使用（センシティブ情報のログ出力回避）
+- アプリケーションの重要なイベントをログに記録
+
+## 依存関係管理
+- Spring Boot Starterの積極的活用
+- <properties>セクションでバージョン一元管理
+- 定期的な依存関係更新とセキュリティパッチ適用
+- 依存関係のバージョンを固定し、安定性を確保
+
+## その他のベストプラクティス
+- アクチュエータによるアプリケーション監視
+- @ValidとValidatedアノテーションによるバリデーション
+- 適切な例外処理とカスタム例外クラスの定義
+- APIドキュメントの自動生成（Swaggerなどを使用）
+
+# 常に最新のSpring Bootベストプラクティスを意識し、セキュアで効率的な開発を心がける
+
+## テーブル構造
++------------+--------------+------+-----+---------+----------------+
+| Field      | Type         | Null | Key | Default | Extra          |
++------------+--------------+------+-----+---------+----------------+
+| id         | bigint       | NO   | PRI | NULL    | auto_increment |
+| created_at | datetime(6)  | NO   |     | NULL    |                |
+| email      | varchar(254) | NO   | UNI | NULL    |                |
+| password   | varchar(60)  | NO   |     | NULL    |                |
+| updated_at | datetime(6)  | NO   |     | NULL    |                |
+| username   | varchar(20)  | NO   | UNI | NULL    |                |
++------------+--------------+------+-----+---------+----------------+
+
++------------+-------------+------+-----+-------------------+-----------------------------------------------+
+| Field      | Type        | Null | Key | Default           | Extra                                         |
++------------+-------------+------+-----+-------------------+-----------------------------------------------+
+| id         | bigint      | NO   | PRI | NULL              | auto_increment                                |
+| user_id    | bigint      | NO   | MUL | NULL              |                                               |
+| contents   | varchar(40) | NO   |     | NULL              |                                               |
+| created_at | datetime    | NO   |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED                             |
+| updated_at | datetime    | NO   |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED on update CURRENT_TIMESTAMP |
++------------+-------------+------+-----+-------------------+-----------------------------------------------+
