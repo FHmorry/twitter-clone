@@ -71,4 +71,15 @@ public class UserService implements UserDetailsService {
         // ユーザーを保存
         return userRepository.save(user);
     }
+
+
+    /**
+     * ユーザー名からユーザーを取得するメソッド
+     * @param username 検索対象のユーザー名
+     * @return ユーザーオブジェクト
+     */
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElse(null);
+    }
 }

@@ -15,6 +15,6 @@ docker rm twitter-clone-container || true
 
 # 新しいコンテナの起動
 echo "Running new container..."
-docker run -d --name twitter-clone-container -p 8080:8080 twitter-clone
+docker run -d --name twitter-clone-container -p 8080:8080 -e JWT_SECRET_KEY=your_secret_key twitter-clone
 
 echo "Done!"

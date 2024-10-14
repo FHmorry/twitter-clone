@@ -2,6 +2,7 @@ package com.example.twitterclone.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,6 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.twitterclone.model.User;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Date; // Dateクラスをインポート
+import io.jsonwebtoken.Jwts; // Jwtsクラスをインポート
+import io.jsonwebtoken.SignatureAlgorithm; // SignatureAlgorithmクラスをインポート
 
 /**
  * ログイン処理を担当するコントローラークラス
@@ -40,17 +44,29 @@ public class LoginController {
   @PostMapping("/login")
   public ResponseEntity<Map<String, String>> login(@RequestBody User user, HttpServletRequest request) {
     try {
+      // ログイン処理の開始をログに記録
+      System.out.println("ログイン処理を開始します: ユーザー名 = " + user.getUsername());
+      
       // ユーザー名とパスワードを使用して認証を試みる
       Authentication authentication = authenticationManager.authenticate(
-          new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
-      );
+          new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
+      
+      // ログイン処理の終了をログに記録
+      System.out.println("ログイン処理が完了しました: ユーザー名 = " + user.getUsername());
+      
       // 認証成功時、SecurityContextに認証情報を設定
       SecurityContextHolder.getContext().setAuthentication(authentication);
+      
+      // 認証情報をターミナルに表示
+      // デバッグ用
+      System.out.println("認証情報: " + authentication);
 
-      // 認証成功時のレスポンスを作成
+      // アクセストークンを生成
+      String token = generateToken(authentication);
+
       Map<String, String> response = new HashMap<>();
       response.put("message", "ログイン成功");
-      response.put("username", user.getUsername());
+      response.put("token", token); // アクセストークンをレスポンスに追加
       return ResponseEntity.ok().body(response);
     } catch (AuthenticationException e) {
       // 認証失敗時のエラーレスポンスを作成
@@ -58,5 +74,24 @@ public class LoginController {
       response.put("message", "ログイン失敗: " + e.getMessage());
       return ResponseEntity.status(401).body(response);
     }
+  }
+
+  @Value("${JWT_SECRET_KEY}")
+  private String secretKey;
+
+  private String generateToken(Authentication authentication) {
+    // JWTトークンを生成
+    String username = authentication.getName();
+    long expirationTime = 1000 * 60 * 60; // 1時間の有効期限
+    Date now = new Date();
+    Date expiryDate = new Date(now.getTime() + expirationTime);
+
+    // JWTトークンを生成
+    return Jwts.builder()
+        .setSubject(username)
+        .setIssuedAt(now)
+        .setExpiration(expiryDate)
+        .signWith(SignatureAlgorithm.HS512, secretKey) // 環境変数から取得した秘密鍵を使用
+        .compact();
   }
 }
