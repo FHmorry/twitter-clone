@@ -67,4 +67,13 @@ public class PostController {
         postService.deletePost(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/my-posts")
+    public ResponseEntity<List<Post>> getMyPosts(Authentication authentication) {
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        User user = userService.findByUsername(userDetails.getUsername());
+        List<Post> posts = postService.getPostsByUserId(user.getId());
+        return ResponseEntity.ok(posts);
+    }
 }

@@ -72,14 +72,14 @@ public class UserService implements UserDetailsService {
         return userRepository.save(user);
     }
 
-
     /**
      * ユーザー名からユーザーを取得するメソッド
      * @param username 検索対象のユーザー名
      * @return ユーザーオブジェクト
+     * @throws UsernameNotFoundException ユーザーが見つからない場合にスロー
      */
     public User findByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElse(null);
+            .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
     }
 }

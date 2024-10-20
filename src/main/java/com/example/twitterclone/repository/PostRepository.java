@@ -16,4 +16,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // 最新の投稿から指定した数だけ取得するメソッド
     List<Post> findTop10ByOrderByCreatedAtDesc();
+
+    // ユーザーIDで投稿の新着順で取得するメソッド
+    List<Post> findByUserIdOrderByCreatedAtDesc(Long userId);
 }
