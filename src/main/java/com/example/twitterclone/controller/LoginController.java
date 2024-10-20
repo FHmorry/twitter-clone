@@ -44,22 +44,12 @@ public class LoginController {
   @PostMapping("/login")
   public ResponseEntity<Map<String, String>> login(@RequestBody User user, HttpServletRequest request) {
     try {
-      // ログイン処理の開始をログに記録
-      System.out.println("ログイン処理を開始します: ユーザー名 = " + user.getUsername());
-      
       // ユーザー名とパスワードを使用して認証を試みる
       Authentication authentication = authenticationManager.authenticate(
           new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
       
-      // ログイン処理の終了をログに記録
-      System.out.println("ログイン処理が完了しました: ユーザー名 = " + user.getUsername());
-      
       // 認証成功時、SecurityContextに認証情報を設定
       SecurityContextHolder.getContext().setAuthentication(authentication);
-      
-      // 認証情報をターミナルに表示
-      // デバッグ用
-      System.out.println("認証情報: " + authentication);
 
       // アクセストークンを生成
       String token = generateToken(authentication);
