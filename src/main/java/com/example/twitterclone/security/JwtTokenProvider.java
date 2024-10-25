@@ -1,52 +1,80 @@
 package com.example.twitterclone.security;
 
 import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.annotation.Value;
-import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import java.util.Date;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import com.example.twitterclone.config.JwtConfig;
+import com.example.twitterclone.service.UserService;
+import com.example.twitterclone.model.User;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Component
 public class JwtTokenProvider {
-    @Value("${JWT_SECRET_KEY}")
-    private String secretKey;
+    private final JwtConfig jwtConfig;
+    private final UserService userService; // 追加
 
-    private final UserDetailsService userDetailsService;
-
-    public JwtTokenProvider(UserDetailsService userDetailsService) {
-        this.userDetailsService = userDetailsService;
+    public JwtTokenProvider(JwtConfig jwtConfig, UserService userService) { // コンストラクタ修正
+        this.jwtConfig = jwtConfig;
+        this.userService = userService;
     }
 
-    // JWTトークンの生成、検証などのメソッドをここに実装します
+    // 認証情報からJWTトークンを生成するメソッド
+    public String generateToken(Authentication authentication) {
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal(); // 認証情報からユーザー詳細を取得
+        User user = userService.findByUsername(userDetails.getUsername()); // ユーザー情報を取得
+        Date now = new Date(); // 現在の日時を取得
+        Date expiryDate = new Date(now.getTime() + jwtConfig.getExpirationMilliseconds()); // 有効期限を設定
+        Claims claims = Jwts.claims().setSubject(user.getId().toString()); // ユーザーIDを設定
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(SignatureAlgorithm.HS512, jwtConfig.getSecretKey())
+                .compact();
+    }
 
+    // HTTPリクエストからJWTトークンを抽出するメソッド
     public String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+            return bearerToken.substring(7); // "Bearer "を除去してトークンを返す
         }
-        return null;
+        return null; // トークンが存在しない場合はnullを返す
     }
 
+    // JWTトークンの有効性を検証するメソッド
     public boolean validateToken(String token) {
         try {
-            Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+            Jws<Claims> claims = Jwts.parser()
+            .setSigningKey(jwtConfig.getSecretKey())
+            .parseClaimsJws(token);
             return !claims.getBody().getExpiration().before(new Date());
         } catch (JwtException | IllegalArgumentException e) {
-            return false;
+            // エラーハンドリング（必要に応じてログ出力など）
         }
+        return false;
     }
 
+    // JWTトークンからAuthenticationオブジェクトを取得するメソッド
     public Authentication getAuthentication(String token) {
-        Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
-        String username = claims.getSubject();
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(jwtConfig.getSecretKey())
+                    .parseClaimsJws(token)
+                    .getBody();
+            Long userId = Long.parseLong(claims.getSubject());
+            UserDetails userDetails = userService.loadUserById(userId);
+            return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+        } catch (Exception e) {
+            // エラーハンドリング（必要に応じてログ出力など）
+            return null;
+        }
     }
 }

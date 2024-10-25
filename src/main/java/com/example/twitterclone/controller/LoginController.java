@@ -2,7 +2,6 @@ package com.example.twitterclone.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,9 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.twitterclone.model.User;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Date; // Dateクラスをインポート
-import io.jsonwebtoken.Jwts; // Jwtsクラスをインポート
-import io.jsonwebtoken.SignatureAlgorithm; // SignatureAlgorithmクラスをインポート
+import com.example.twitterclone.security.JwtTokenProvider;
 
 /**
  * ログイン処理を担当するコントローラークラス
@@ -33,6 +30,12 @@ public class LoginController {
    */
   @Autowired
   private AuthenticationManager authenticationManager;
+
+  /**
+   * JWTトークン生成プロバイダー
+   */
+  @Autowired
+  private JwtTokenProvider jwtTokenProvider;
 
   /**
    * ログイン処理を行うメソッド
@@ -51,12 +54,11 @@ public class LoginController {
       // 認証成功時、SecurityContextに認証情報を設定
       SecurityContextHolder.getContext().setAuthentication(authentication);
 
-      // アクセストークンを生成
-      String token = generateToken(authentication);
+      String token = jwtTokenProvider.generateToken(authentication);
 
       Map<String, String> response = new HashMap<>();
       response.put("message", "ログイン成功");
-      response.put("token", token); // アクセストークンをレスポンスに追加
+      response.put("token", token);
       return ResponseEntity.ok().body(response);
     } catch (AuthenticationException e) {
       // 認証失敗時のエラーレスポンスを作成
@@ -64,24 +66,5 @@ public class LoginController {
       response.put("message", "ログイン失敗: " + e.getMessage());
       return ResponseEntity.status(401).body(response);
     }
-  }
-
-  @Value("${JWT_SECRET_KEY}")
-  private String secretKey;
-
-  private String generateToken(Authentication authentication) {
-    // JWTトークンを生成
-    String username = authentication.getName();
-    long expirationTime = 1000 * 60 * 60; // 1時間の有効期限
-    Date now = new Date();
-    Date expiryDate = new Date(now.getTime() + expirationTime);
-
-    // JWTトークンを生成
-    return Jwts.builder()
-        .setSubject(username)
-        .setIssuedAt(now)
-        .setExpiration(expiryDate)
-        .signWith(SignatureAlgorithm.HS512, secretKey) // 環境変数から取得した秘密鍵を使用
-        .compact();
   }
 }

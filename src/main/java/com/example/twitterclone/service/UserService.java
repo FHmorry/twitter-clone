@@ -53,6 +53,25 @@ public class UserService implements UserDetailsService {
     }
 
     /**
+     * ユーザーIDからUserDetailsを読み込むメソッド
+     * @param userId 検索対象のユーザーID
+     * @return UserDetails オブジェクト
+     * @throws UsernameNotFoundException ユーザーが見つからない場合にスロー
+     */
+    public UserDetails loadUserById(Long userId) throws UsernameNotFoundException {
+        // ユーザーIDを使用してデータベースからユーザーを検索
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with ID: " + userId));
+        
+        // Spring SecurityのUserDetailsオブジェクトを作成して返す
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                new ArrayList<>() // 現在、権限は設定していない
+        );
+    }
+
+    /**
      * ユーザーを登録するメソッド
      * @param user 登録するユーザー情報
      * @return 登録されたユーザー
@@ -81,5 +100,15 @@ public class UserService implements UserDetailsService {
     public User findByUsername(String username) {
         return userRepository.findByUsername(username)
             .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+    }
+
+    /**
+     * ユーザーIDからユーザーオブジェクトを取得するメソッド
+     * @param userId ユーザーID
+     * @return ユーザーオブジェクト
+     */
+    public User findById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with ID: " + userId));
     }
 }
