@@ -3,6 +3,7 @@ package com.example.twitterclone.security;
 import org.springframework.stereotype.Component;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -18,10 +19,12 @@ import jakarta.servlet.http.HttpServletRequest;
 @Component
 public class JwtTokenProvider {
     private final JwtConfig jwtConfig;
+    private final UserDetailsService userDetailsService;
     private final UserService userService; // 追加
 
-    public JwtTokenProvider(JwtConfig jwtConfig, UserService userService) { // コンストラクタ修正
+    public JwtTokenProvider(JwtConfig jwtConfig, UserDetailsService userDetailsService, UserService userService) { // コンスラクタに追加
         this.jwtConfig = jwtConfig;
+        this.userDetailsService = userDetailsService;
         this.userService = userService;
     }
 

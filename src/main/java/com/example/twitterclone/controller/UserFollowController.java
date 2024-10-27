@@ -32,8 +32,8 @@ public class UserFollowController {
         userFollowService.followUser(currentUser.getId(), userId);
         
         Map<String, String> response = new HashMap<>();
-        response.put("message", "ユーザーID: " + userId + " をフォローしました。");
-        return ResponseEntity.ok(response); // 200 OKとメッセージを返す
+        response.put("message", "ユーザーID: " + currentUser.getId() + " がユーザーID: " + userId + " をフォローしました。");
+        return ResponseEntity.ok(response);
     }
     // ユーザーのフォローを解除するエンドポイント
     @DeleteMapping("/{userId}")
@@ -44,8 +44,8 @@ public class UserFollowController {
         userFollowService.unfollowUser(currentUser.getId(), userId);
         
         Map<String, String> response = new HashMap<>();
-        response.put("message", "ユーザーID: " + userId + " のフォローを解除しました。");
-        return ResponseEntity.ok(response); // 200 OKとメッセージを返す
+        response.put("message", "ユーザーID: " + currentUser.getId() + " がユーザーID: " + userId + " のフォローを解除しました。");
+        return ResponseEntity.ok(response);
     }
 
     // 現在のユーザーがフォローしているユーザーのリストを取得するエンドポイント
@@ -63,7 +63,7 @@ public class UserFollowController {
     public ResponseEntity<List<UserFollow>> getFollowers(Authentication authentication) {
         // 現在のユーザーを取得
         User currentUser = getCurrentUser(authentication);
-        // ���ォロワーのリストを取得
+        // ォロワーのリストを取得
         List<UserFollow> followers = userFollowService.getFollowers(currentUser.getId());
         return ResponseEntity.ok(followers);
     }

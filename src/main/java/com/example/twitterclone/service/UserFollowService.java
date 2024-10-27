@@ -6,11 +6,14 @@
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.stereotype.Service;
     import org.springframework.transaction.annotation.Transactional;
+    import com.example.twitterclone.exception.UserFollowException;
     
     import java.util.List;
     
     @Service
     public class UserFollowService {
+    
+        private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UserFollowService.class);
     
         @Autowired
         private UserFollowRepository userFollowRepository;
@@ -19,19 +22,35 @@
         // フォローしていない場合に新しいフォロー関係を作成し、保存する
         @Transactional
         public void followUser(Long followerId, Long followeeId) {
-            // フォロー済みのユーザーを確認
-            if (isFollowing(followerId, followeeId)) {
-                throw new IllegalArgumentException("このユーザーはすでにフォローしています。");
+            try {
+                if (isFollowing(followerId, followeeId)) {
+                    throw new UserFollowException(
+                        String.format("フォロー失敗: ユーザーID %d は既にユーザーID %d をフォローしています", followerId, followeeId),
+                        "ALREADY_FOLLOWING"
+                    );
+                }
+                userFollowRepository.save(new UserFollow(followerId, followeeId));
+                logger.info("フォロー成功: ユーザーID {} がユーザーID {} をフォローしました", followerId, followeeId);
+            } catch (UserFollowException e) {
+                logger.info(e.getMessage());
+                throw e;
+            } catch (Exception e) {
+                String errorMessage = String.format("予期せぬエラーが発生しました: %s", e.getMessage());
+                logger.error(errorMessage);
+                throw new UserFollowException(errorMessage, "SYSTEM_ERROR");
             }
-            UserFollow userFollow = new UserFollow(followerId, followeeId);
-            userFollowRepository.save(userFollow);
         }
     
         // ユーザーのフォローを解除するメソッド
         // 指定されたユーザーのフォロー関係を削除する
         @Transactional
         public void unfollowUser(Long followingUserId, Long followedUserId) {
+            if (!isFollowing(followingUserId, followedUserId)) {
+                logger.info("アンフォロー失敗: ユーザーID {} はユーザーID {} をフォローしていません", followingUserId, followedUserId);
+                return;
+            }
             userFollowRepository.deleteById_FollowingUserIdAndId_FollowedUserId(followingUserId, followedUserId);
+            logger.info("アンフォロー成功: ユーザーID {} がユーザーID {} のフォローを解除しました", followingUserId, followedUserId);
         }
     
         // フォローしているユーザーのリストを取得するメソッド

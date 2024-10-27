@@ -48,11 +48,16 @@
             Long followingUserId = 1L; // フォローを解除するユーザーのID
             Long followedUserId = 2L; // フォロー解除されるユーザーのID
     
+            // isFollowing メソッドが true を返すように設定
+            when(userFollowRepository.existsById_FollowingUserIdAndId_FollowedUserId(followingUserId, followedUserId))
+                .thenReturn(true);
+
             // ユーザーのフォローを解除するメソッドを呼び出す
             userFollowService.unfollowUser(followingUserId, followedUserId);
-    
+
             // deleteメソッドが1回呼ばれたことを確認
-            verify(userFollowRepository, times(1)).deleteById_FollowingUserIdAndId_FollowedUserId(followingUserId, followedUserId);
+            verify(userFollowRepository, times(1))
+                .deleteById_FollowingUserIdAndId_FollowedUserId(followingUserId, followedUserId);
         }
     
         @Test
