@@ -9,6 +9,7 @@
     import com.example.twitterclone.exception.UserFollowException;
     
     import java.util.List;
+    import java.util.stream.Collectors;
     
     @Service
     public class UserFollowService {
@@ -69,5 +70,13 @@
         // フォロー関係が存在するかどうかを返す
         public boolean isFollowing(Long followingUserId, Long followedUserId) {
             return userFollowRepository.existsById_FollowingUserIdAndId_FollowedUserId(followingUserId, followedUserId);
+        }
+    
+        // フォローしているユーザーのIDリストを取得するメソッド
+        public List<Long> getFollowingUserIds(Long userId) {
+            return userFollowRepository.findById_FollowingUserId(userId)
+                .stream()
+                .map(UserFollow::getFollowedUserId)
+                .collect(Collectors.toList());
         }
     }

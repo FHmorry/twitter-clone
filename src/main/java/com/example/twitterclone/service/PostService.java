@@ -32,4 +32,8 @@ public class PostService {
     public List<Post> getPostsByUserId(Long userId) {
         return postRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
+
+    public List<Post> getPostsByUserIdsWithUser(List<Long> userIds) {
+        return postRepository.findByUserIdInWithUser(userIds);
+    }
 }

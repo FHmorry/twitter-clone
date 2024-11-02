@@ -1,5 +1,6 @@
 package com.example.twitterclone.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -14,12 +15,18 @@ public class Post {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private User user;
+
     @Column(name = "contents", nullable = false, length = 40)
     private String contents;
 
+    @JsonIgnore
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @JsonIgnore
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
@@ -53,6 +60,14 @@ public class Post {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     @PrePersist

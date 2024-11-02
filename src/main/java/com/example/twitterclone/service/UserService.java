@@ -2,6 +2,8 @@ package com.example.twitterclone.service;
 
 import com.example.twitterclone.model.User;
 import com.example.twitterclone.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,6 +20,7 @@ import java.util.ArrayList;
 @Service
 public class UserService implements UserDetailsService {
 
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -39,17 +42,25 @@ public class UserService implements UserDetailsService {
      */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // ユーザー名を使用してデータベースからユーザーを検索
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+        logger.info("ユーザー名からユーザーを検索: {}", username);
         
-        // Spring SecurityのUserDetailsオブジェクトを作成して返す
-        // パラメータ: ユーザー名、パスワード、権限リスト（ここでは空のリスト）
-        return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
-                user.getPassword(),
-                new ArrayList<>() // 現在、権限は設定していない
-        );
+        try {
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+            
+            logger.info("ユーザーが見つかりました: {}", user.getUsername());
+            logger.debug("ユーザー詳細 - ID: {}, Email: {}", user.getId(), user.getEmail());
+            logger.debug("保存されているパスワードハッシュ: {}", user.getPassword());
+            
+            return new org.springframework.security.core.userdetails.User(
+                    user.getUsername(),
+                    user.getPassword(),
+                    new ArrayList<>()
+            );
+        } catch (UsernameNotFoundException e) {
+            logger.error("ユーザーが見つかりません: {}", username);
+            throw e;
+        }
     }
 
     /**
@@ -78,17 +89,20 @@ public class UserService implements UserDetailsService {
      * @throws DataIntegrityViolationException 同じユーザー名が既に存在する場合
      */
     public User registerUser(User user) throws DataIntegrityViolationException {
-        // 同じユーザー名が既に存在するかチェック
+        logger.info("新規ユーザー登録開始: {}", user.getUsername());
+        
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            logger.warn("ユーザー名が重複: {}", user.getUsername());
             throw new DataIntegrityViolationException("ユーザー名 '" + user.getUsername() + "' は既に使用されています。");
         }
 
-        // パスワードをハッシュ化
         String encodedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
         
-        // ユーザーを保存
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        logger.info("ユーザー登録成功: {}", savedUser.getUsername());
+        
+        return savedUser;
     }
 
     /**
