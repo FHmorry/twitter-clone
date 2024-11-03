@@ -26,7 +26,7 @@ public class RegisterController {
      * @return 登録結果のResponseEntity
      */
     @CrossOrigin(origins = "http://localhost:3000")
-    @PostMapping("/register")
+    @PostMapping("/api/register")
     public ResponseEntity<?> registerUser(@RequestBody User user) {
         try {
             // ユーザー登録処理を実行
