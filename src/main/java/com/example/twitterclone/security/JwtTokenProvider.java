@@ -15,6 +15,8 @@ import com.example.twitterclone.config.JwtConfig;
 import com.example.twitterclone.service.UserService;
 import com.example.twitterclone.model.User;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class JwtTokenProvider {
@@ -32,9 +34,17 @@ public class JwtTokenProvider {
     public String generateToken(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal(); // 認証情報からユーザー詳細を取得
         User user = userService.findByUsername(userDetails.getUsername()); // ユーザー情報を取得
+        
+        Claims claims = Jwts.claims();
+        claims.setSubject(user.getId().toString());
+        
+        // ユーザー情報をclaimsに追加
+        Map<String, Object> additionalInfo = new HashMap<>();
+        additionalInfo.put("username", user.getUsername());
+        claims.putAll(additionalInfo);
+        
         Date now = new Date(); // 現在の日時を取得
         Date expiryDate = new Date(now.getTime() + jwtConfig.getExpirationMilliseconds()); // 有効期限を設定
-        Claims claims = Jwts.claims().setSubject(user.getId().toString()); // ユーザーIDを設定
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
@@ -72,8 +82,11 @@ public class JwtTokenProvider {
                     .setSigningKey(jwtConfig.getSecretKey())
                     .parseClaimsJws(token)
                     .getBody();
+                
             Long userId = Long.parseLong(claims.getSubject());
+            String username = (String) claims.get("username");
             UserDetails userDetails = userService.loadUserById(userId);
+            
             return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
         } catch (Exception e) {
             // エラーハンドリング（必要に応じてログ出力など）
