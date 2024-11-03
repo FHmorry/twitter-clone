@@ -17,12 +17,17 @@ import com.example.twitterclone.model.User;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 public class JwtTokenProvider {
     private final JwtConfig jwtConfig;
     private final UserDetailsService userDetailsService;
     private final UserService userService; // 追加
+
+    // ブラックリストのトークンを保持するSetを追加
+    private Set<String> blacklistedTokens = new HashSet<>();
 
     public JwtTokenProvider(JwtConfig jwtConfig, UserDetailsService userDetailsService, UserService userService) { // コンスラクタに追加
         this.jwtConfig = jwtConfig;
@@ -62,8 +67,16 @@ public class JwtTokenProvider {
         return null; // トークンが存在しない場合はnullを返す
     }
 
+    // トークンを無効化するメソッド
+    public void invalidateToken(String token) {
+        blacklistedTokens.add(token);
+    }
+
     // JWTトークンの有効性を検証するメソッド
     public boolean validateToken(String token) {
+        if (blacklistedTokens.contains(token)) {
+            return false;
+        }
         try {
             Jws<Claims> claims = Jwts.parser()
             .setSigningKey(jwtConfig.getSecretKey())
