@@ -5,8 +5,6 @@ import com.example.twitterclone.model.User;
 import com.example.twitterclone.model.UserFollow;
 import com.example.twitterclone.service.UserFollowService;
 import com.example.twitterclone.service.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -26,8 +24,6 @@ public class UserFollowController {
 
     @Autowired
     private UserService userService;
-
-    private static final Logger logger = LoggerFactory.getLogger(UserFollowController.class);
 
     /**
      * ユーザーをフォローするエンドポイント
@@ -77,8 +73,6 @@ public class UserFollowController {
                 // isFollowingBack や postCount を設定
                 dto.setIsFollowingBack(userFollowService.isFollowingBack(currentUser.getId(), followedUser.getId()));
                 dto.setPostCount(userService.getPostCount(followedUser.getId()));
-                // DTOの内容をログに出力
-                logger.debug("DTO: {}", dto);
                 return dto;
             })
             .collect(Collectors.toList());

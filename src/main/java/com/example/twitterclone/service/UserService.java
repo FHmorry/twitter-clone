@@ -2,8 +2,6 @@ package com.example.twitterclone.service;
 
 import com.example.twitterclone.model.User;
 import com.example.twitterclone.repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -17,7 +15,6 @@ import java.util.ArrayList;
 @Service
 public class UserService implements UserDetailsService {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final PostService postService;
@@ -43,11 +40,8 @@ public class UserService implements UserDetailsService {
         try {
             // ユーザー情報をデータベースに保存
             User savedUser = userRepository.save(user);
-            logger.info("ユーザー登録成功: {}", savedUser.getUsername());
             return savedUser;
         } catch (DataIntegrityViolationException e) {
-            // ユーザー登録失敗時のエラーログ
-            logger.error("ユーザー登録失敗: {}", e.getMessage());
             throw e;
         }
     }

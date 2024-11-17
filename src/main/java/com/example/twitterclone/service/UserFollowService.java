@@ -3,8 +3,6 @@ package com.example.twitterclone.service;
 import com.example.twitterclone.model.UserFollow;
 import com.example.twitterclone.repository.UserFollowRepository;
 import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,7 +10,6 @@ import java.util.stream.Collectors;
 @Service
 public class UserFollowService {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserFollowService.class);
     private final UserFollowRepository userFollowRepository;
 
     // コンストラクタ: UserFollowRepositoryを依存性注入
@@ -33,7 +30,6 @@ public class UserFollowService {
         // フォロー関係を作成し、保存
         UserFollow userFollow = new UserFollow(followingUserId, followedUserId);
         userFollowRepository.save(userFollow);
-        logger.info("ユーザーID {} がユーザーID {} をフォローしました。", followingUserId, followedUserId);
     }
 
     /**
@@ -48,7 +44,6 @@ public class UserFollowService {
         }
         // フォロー関係を削除
         userFollowRepository.deleteById_FollowingUserIdAndId_FollowedUserId(followingUserId, followedUserId);
-        logger.info("アンフォロー成功: ユーザーID {} がユーザーID {} のフォローを解除しました", followingUserId, followedUserId);
     }
 
     /**

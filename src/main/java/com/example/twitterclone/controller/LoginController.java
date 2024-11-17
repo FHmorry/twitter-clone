@@ -2,9 +2,6 @@ package com.example.twitterclone.controller;
 
 import com.example.twitterclone.security.JwtTokenProvider;
 import com.example.twitterclone.service.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -19,16 +16,11 @@ import java.util.Map;
 @RestController
 public class LoginController {
 
-    private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
+    private AuthenticationManager authenticationManager; // 認証マネージャー
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private JwtTokenProvider jwtTokenProvider; // JWTトークンプロバイダー
 
-    @Autowired
-    private JwtTokenProvider jwtTokenProvider;
-
-    @Autowired
-    private UserService userService;
+    private UserService userService; // ユーザーサービス
 
     /**
      * ログインのエンドポイント
@@ -38,18 +30,22 @@ public class LoginController {
     @PostMapping("/api/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> loginRequest) {
         try {
+            // リクエストからユーザー名とパスワードを取得
             String username = loginRequest.get("username");
             String password = loginRequest.get("password");
 
+            // ユーザー名とパスワードを使用して認証を試みる
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(username, password)
             );
 
+            // 認証が成功した場合、セキュリティコンテキストに認証情報を設定
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            
+            // JWTトークンを生成
             String token = jwtTokenProvider.generateToken(authentication);
 
-            logger.info("ログイン成功: {}", username);
-
+            // レスポンスにログイン成功メッセージとトークンを含める
             Map<String, String> response = new HashMap<>();
             response.put("message", "ログイン成功");
             response.put("token", token);
@@ -57,8 +53,6 @@ public class LoginController {
 
             return ResponseEntity.ok(response);
         } catch (AuthenticationException e) {
-            logger.error("ログイン失敗: {} - 理由: {}", loginRequest.get("username"), e.getMessage());
-            
             // 認証失敗時のエラーレスポンスを作成
             Map<String, String> response = new HashMap<>();
             response.put("message", "ログイン失敗: " + e.getMessage());
