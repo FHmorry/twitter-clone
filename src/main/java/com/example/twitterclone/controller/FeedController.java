@@ -1,5 +1,6 @@
 package com.example.twitterclone.controller;
 
+import com.example.twitterclone.dto.PostResponseDTO;
 import com.example.twitterclone.model.Post;
 import com.example.twitterclone.model.User;
 import com.example.twitterclone.service.PostService;
@@ -9,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/feed")
@@ -29,9 +32,9 @@ public class FeedController {
      * GET /api/feed/following-posts
      */
     @GetMapping("/following-posts")
-    public ResponseEntity<List<Post>> getFollowingPosts(Authentication authentication) {
+    public ResponseEntity<List<PostResponseDTO>> getFollowingPosts(Authentication authentication) {
         // 現在のユーザーを取得
-        User currentUser = getCurrentUser(authentication);
+        User currentUser = userService.getCurrentUser(authentication);
 
         // フォローしているユーザーのIDリストを取得
         List<Long> followingUserIds = userFollowService.getFollowingUserIds(currentUser.getId());
@@ -39,7 +42,12 @@ public class FeedController {
         // フォローしているユーザーの投稿を一括取得
         List<Post> posts = postService.getPostsByUserIdsWithUser(followingUserIds);
 
-        return ResponseEntity.ok(posts);
+        // DTOへの変換
+        List<PostResponseDTO> response = posts.stream()
+            .map(PostResponseDTO::fromEntity)
+            .collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -47,9 +55,9 @@ public class FeedController {
      * GET /api/feed/my-and-following-posts
      */
     @GetMapping("/my-and-following-posts")
-    public ResponseEntity<List<Post>> getMyAndFollowingPosts(Authentication authentication) {
+    public ResponseEntity<List<PostResponseDTO>> getMyAndFollowingPosts(Authentication authentication) {
         // 現在のユーザーを取得
-        User currentUser = getCurrentUser(authentication);
+        User currentUser = userService.getCurrentUser(authentication);
 
         // フォローしているユーザーのIDリストを取得
         List<Long> followingUserIds = userFollowService.getFollowingUserIds(currentUser.getId());
@@ -60,14 +68,11 @@ public class FeedController {
         // 自分とフォローしているユーザーの投稿を一括取得
         List<Post> posts = postService.getPostsByUserIdsWithUser(followingUserIds);
 
-        return ResponseEntity.ok(posts);
-    }
+        // DTOへの変換
+        List<PostResponseDTO> response = posts.stream()
+            .map(PostResponseDTO::fromEntity)
+            .collect(Collectors.toList());
 
-    /**
-     * 認証情報から現在のユーザーを取得するヘルパーメソッド
-     */
-    private User getCurrentUser(Authentication authentication) {
-        String username = authentication.getName();
-        return userService.findByUsername(username);
+        return ResponseEntity.ok(response);
     }
 }

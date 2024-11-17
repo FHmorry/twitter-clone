@@ -3,7 +3,6 @@ package com.example.twitterclone.security;
 import org.springframework.stereotype.Component;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -23,15 +22,13 @@ import java.util.Set;
 @Component
 public class JwtTokenProvider {
     private final JwtConfig jwtConfig;
-    private final UserDetailsService userDetailsService;
-    private final UserService userService; // 追加
+    private final UserService userService;
 
     // ブラックリストのトークンを保持するSetを追加
     private Set<String> blacklistedTokens = new HashSet<>();
 
-    public JwtTokenProvider(JwtConfig jwtConfig, UserDetailsService userDetailsService, UserService userService) { // コンスラクタに追加
+    public JwtTokenProvider(JwtConfig jwtConfig, UserService userService) {
         this.jwtConfig = jwtConfig;
-        this.userDetailsService = userDetailsService;
         this.userService = userService;
     }
 
@@ -97,7 +94,6 @@ public class JwtTokenProvider {
                     .getBody();
                 
             Long userId = Long.parseLong(claims.getSubject());
-            String username = (String) claims.get("username");
             UserDetails userDetails = userService.loadUserById(userId);
             
             return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());

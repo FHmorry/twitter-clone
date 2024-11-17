@@ -34,6 +34,10 @@ public class PostService {
     }
 
     public List<Post> getPostsByUserIdsWithUser(List<Long> userIds) {
-        return postRepository.findByUserIdInWithUser(userIds);
+        return postRepository.findByUserIdInOrderByCreatedAtDesc(userIds);
+    }
+
+    public int countPostsByUserId(Long userId) {
+        return postRepository.countByUserId(userId).intValue();
     }
 }

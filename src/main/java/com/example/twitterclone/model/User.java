@@ -1,7 +1,5 @@
 package com.example.twitterclone.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -19,18 +17,14 @@ public class User {
     private String username;
 
     @Column(nullable = false, length = 254, unique = true)
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String email;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false, length = 60)
     private String password;
 
-    @JsonIgnore
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @JsonIgnore
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
@@ -90,7 +84,7 @@ public class User {
 
     /**
      * パスワードを取得する
-     * @return パスワー��
+     * @return パスワー
      */
     public String getPassword() {
         return password;
