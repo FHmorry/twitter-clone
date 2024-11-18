@@ -4,11 +4,10 @@ import com.example.twitterclone.dto.UserRequestDTO;
 import com.example.twitterclone.dto.UserResponseDTO;
 import com.example.twitterclone.model.User;
 import com.example.twitterclone.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * ユーザー登録を処理するコントローラークラス
@@ -16,8 +15,11 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class RegisterController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+
+    public RegisterController(UserService userService) {
+        this.userService = userService;
+    }
 
     /**
      * ユーザー登録のエンドポイント

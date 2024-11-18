@@ -6,7 +6,6 @@ import com.example.twitterclone.model.User;
 import com.example.twitterclone.service.PostService;
 import com.example.twitterclone.service.UserFollowService;
 import com.example.twitterclone.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -18,14 +17,15 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/feed")
 public class FeedController {
 
-    @Autowired
-    private UserFollowService userFollowService;
+    private final UserFollowService userFollowService;
+    private final PostService postService;
+    private final UserService userService;
 
-    @Autowired
-    private PostService postService;
-
-    @Autowired
-    private UserService userService;
+    public FeedController(UserFollowService userFollowService, PostService postService, UserService userService) {
+        this.userFollowService = userFollowService;
+        this.postService = postService;
+        this.userService = userService;
+    }
 
     /**
      * フォローしているユーザーの投稿を取得するエンドポイント

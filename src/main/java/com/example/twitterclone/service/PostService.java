@@ -2,7 +2,6 @@ package com.example.twitterclone.service;
 
 import com.example.twitterclone.model.Post;
 import com.example.twitterclone.repository.PostRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,8 +9,11 @@ import java.util.List;
 @Service
 public class PostService {
 
-    @Autowired
-    private PostRepository postRepository;
+    private final PostRepository postRepository;
+
+    public PostService(PostRepository postRepository) {
+        this.postRepository = postRepository;
+    }
 
     public Post createPost(Post post) {
         return postRepository.save(post);

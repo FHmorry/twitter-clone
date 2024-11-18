@@ -16,11 +16,19 @@ import java.util.Map;
 @RestController
 public class LoginController {
 
-    private AuthenticationManager authenticationManager; // 認証マネージャー
+    private final AuthenticationManager authenticationManager; // 認証マネージャー
+    private final JwtTokenProvider jwtTokenProvider; // JWTトークンプロバイダー
+    private final UserService userService; // ユーザーサービス
 
-    private JwtTokenProvider jwtTokenProvider; // JWTトークンプロバイダー
-
-    private UserService userService; // ユーザーサービス
+    // コンストラクタインジェクション
+    public LoginController(
+            AuthenticationManager authenticationManager,
+            JwtTokenProvider jwtTokenProvider,
+            UserService userService) {
+        this.authenticationManager = authenticationManager;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.userService = userService;
+    }
 
     /**
      * ログインのエンドポイント

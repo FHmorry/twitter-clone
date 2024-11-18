@@ -9,18 +9,18 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
 import com.example.twitterclone.security.JwtTokenProvider;
 
 @RestController
-// LogoutControllerクラス
 public class LogoutController {
 
-    @Autowired
-    private JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenProvider jwtTokenProvider;
+
+    public LogoutController(JwtTokenProvider jwtTokenProvider) {
+        this.jwtTokenProvider = jwtTokenProvider;
+    }
 
     @PostMapping("/api/logout")
-    // ログアウト処理を行うメソッド
     public ResponseEntity<Map<String, String>> logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         // 認証情報が存在する場合
         if (authentication != null) {

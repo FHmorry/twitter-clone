@@ -4,7 +4,6 @@ import com.example.twitterclone.model.Post;
 import com.example.twitterclone.model.User;
 import com.example.twitterclone.service.PostService;
 import com.example.twitterclone.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,11 +17,13 @@ import java.util.List;
 @RequestMapping("/posts")
 public class PostController {
 
-    @Autowired
-    private PostService postService;
+    private final PostService postService;
+    private final UserService userService;
 
-    @Autowired
-    private UserService userService;
+    public PostController(PostService postService, UserService userService) {
+        this.postService = postService;
+        this.userService = userService;
+    }
 
     @GetMapping
     public List<Post> getAllPosts() {

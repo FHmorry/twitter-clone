@@ -5,7 +5,6 @@ import com.example.twitterclone.model.User;
 import com.example.twitterclone.model.UserFollow;
 import com.example.twitterclone.service.UserFollowService;
 import com.example.twitterclone.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -19,11 +18,13 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/follow")
 public class UserFollowController {
 
-    @Autowired
-    private UserFollowService userFollowService;
+    private final UserFollowService userFollowService;
+    private final UserService userService;
 
-    @Autowired
-    private UserService userService;
+    public UserFollowController(UserFollowService userFollowService, UserService userService) {
+        this.userFollowService = userFollowService;
+        this.userService = userService;
+    }
 
     /**
      * ユーザーをフォローするエンドポイント
